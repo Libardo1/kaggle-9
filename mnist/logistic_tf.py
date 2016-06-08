@@ -18,7 +18,7 @@ BATCH_SIZE        = 100
 
 sess = tf.Session()
 
-x = tf.placeholder(tf.float32, shape=[None, INPUT_DIMENSIONS])
+x  = tf.placeholder(tf.float32, shape=[None, INPUT_DIMENSIONS])
 y_ = tf.placeholder(tf.float32, shape=[None, OUTPUT_DIMENSIONS])
 
 # Weight matrix and bias vector.
@@ -31,8 +31,7 @@ sess.run(tf.initialize_all_variables())
 y = tf.nn.softmax(tf.matmul(x, W) + b)
 
 # Bayes classifiers
-estimated_classifier = lambda y: tf.argmax(y,1)
-training_classifier  = tf.argmax(y_,1)
+classifier = tf.argmax(y,1)
 
 # Risk estimators
 cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
@@ -40,23 +39,16 @@ cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=
 train_step = tf.train.GradientDescentOptimizer(learning_rate=LEARNING_RATE).minimize(cross_entropy)
 
 # Train the model
-mnist_train = mnist.fetch_data(mnist.TRAIN)
+mnist_train = mnist.from_data_frame(mnist.fetch_data(mnist.TRAIN))
 
-for batch in mnist.batches(mnist_train, batch_size=BATCH_SIZE):
-    labels   = batch['label']
-    features = batch.T.iloc[1:].T
-    train_step.run(feed_dict={x: features, y_: labels}, session=sess)
+for (labels, images) in mnist.batches(mnist_train, batch_size=BATCH_SIZE):
+    train_step.run(feed_dict={x: images, y_: labels}, session=sess)
 
+# Run the model on the testing data.
+mnist_test = mnist.from_unlabeled_data_frame(mnist.fetch_data(mnist.TEST))
 
-correct_prediction = tf.equal(estimated_classifier(y), training_classifier)
+for batch in mnist.unlabeled_batches(mnist_test, batch_size=BATCH_SIZE):
+    sess.run(classifier, feed_dict={x: batch})
 
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-# Test the trained model
-mnist_test = mnist.fetch_data(mnist.TEST)
-images = mnist_test.T.iloc[1:].T
-labels = mnist_test['label']
-
-print(accuracy.eval(feed_dict={x: images, y_: labels}))
 
 sess.close()
