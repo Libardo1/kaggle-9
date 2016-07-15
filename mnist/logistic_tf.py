@@ -2,10 +2,8 @@
 Logistic classifier using TensorFlow for MNIST data.
 """
 import tensorflow   as tf
-import numpy        as np
 import pandas       as pd
 import mnist.mnist  as mnist
-import mnist.kaggle as kaggle
 
 """
 The MNIST data has 784 dimensions. Each vector represents a 28x28 pixel grayscale

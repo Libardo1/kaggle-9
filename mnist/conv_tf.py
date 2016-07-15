@@ -19,9 +19,8 @@ class CNNClassifier():
                  y_,
                  y_conv,
                  objective_func, 
-                 train_step, 
-                 correct_prediction, 
-                 accuracy_metric
+                 train_step,
+                 predict,
                  keep_prob
                  ):
 
@@ -30,9 +29,8 @@ class CNNClassifier():
         self.y_conv = y_conv
         self.objective_func = objective_func
         self.train_step     = train_step
-        self.correct_prediction = correct_prediction
-        self.accuracy_metric    = accuracy_metric
-        self.keep_prob          = keep_prob
+        self.predict        = predict
+        self.keep_prob      = keep_prob
 
 
     def init(self, session):
@@ -149,27 +147,26 @@ def build_computational_graph(input_dimensions=DEFAULT_INPUT_DIMENSIONS,
     # Training step.
     train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 
-    correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    predict = tf.argmax(y_conv, 1)
 
-    conv_net = CNNClassifier(x, y_, y_conv, cross_entropy, train_step, correct_prediction, accuracy, keep_prob)
+    conv_net = CNNClassifier(x, y_, y_conv, cross_entropy, train_step, predict, keep_prob)
 
     return conv_net
 
 
-def train(conv_net,
-          session, 
-          mnist_train, 
-          batch_size=DEFAULT_BATCH_SIZE,
-          keep_prob=DEFAULT_KEEP_PROB,
-          logging=False):
+def train_model(conv_net,
+                session, 
+                mnist_train, 
+                batch_size=DEFAULT_BATCH_SIZE,
+                keep_prob=DEFAULT_KEEP_PROB,
+                logging=False):
     """
     Train the convolutional neural net.
     """
-    for batch in mnist.batches(mnist_train, batch_size=batch_size):
+    for (labels, images) in mnist.batches(mnist_train, batch_size=batch_size):
         feed_dict = {
-                        conv_net.x: batch.images, 
-                        conv_net.y_: batch.labels, 
+                        conv_net.x: images, 
+                        conv_net.y_: labels, 
                         conv_net.keep_prob: keep_prob
                     }
         conv_net.train_step.run(feed_dict=feed_dict, session=session)
@@ -179,14 +176,14 @@ def test_eval(conv_net, mnist_test):
     feed_dict = {
             conv_net.x : mnist_test.images,
             conv_net.y_ : mnist_test.labels,
-            keep_prob: 1.0
+            conv_net.keep_prob: 1.0
         }
     accuracy_eval = conv_net.accuracy_metric.eval(feed_dict=feed_dict)
 
     return accuracy_eval
 
 
-def test(conv_net, mnist_train, session):
+def test_model(conv_net, mnist_test, session):
     """
     Classifiy the test data.
     """
@@ -195,8 +192,12 @@ def test(conv_net, mnist_train, session):
     image_frame = mnist_test.images
 
     for item in mnist.unlabeled_batches(mnist_test):
-        idx   = item.index[0]
-        label = session.run(conv_net, feed_dict={conv_net.x: item})
+        idx       = item.index[0]
+        feed_dict = {
+                conv_net.x: item, 
+                conv_net.keep_prob: 1.0
+            }
+        label     = session.run(conv_net.predict, feed_dict=feed_dict)
         label_frame.loc[idx] = label
 
     # Join the frames together and return them.
@@ -211,14 +212,14 @@ def execute_analysis(train=mnist.TRAIN, test=mnist.TEST):
     sess = tf.Session()
     conv_net = build_computational_graph()
     conv_net.init(sess)
-
+    
     # Train the model
     mnist_train = mnist.from_data_frame(mnist.fetch_data(train))
-    train(conv_net, sess, mnist_train)
-
+    train_model(conv_net, sess, mnist_train)
+    
     # Test the model.
     mnist_test = mnist.from_unlabeled_data_frame(mnist.fetch_data(test))
-    labels = test(mnist_test, session)
+    labels = test_model(conv_net, mnist_test, sess)
 
     sess.close()
 
