@@ -22,7 +22,7 @@ def build_computational_graph(input_dimensions=INPUT_DIMENSIONS,
                               learning_rate=LEARNING_RATE,
                               batch_size=BATCH_SIZE):
     """
-    Build the computational graph represnting the statistical models that is
+    Build the computational graph representing the statistical model that is
     going to be used to predict digit classifications.
     """
     x  = tf.placeholder(tf.float32, shape=[None, input_dimensions])

@@ -1,6 +1,6 @@
 import pandas as pd
 
-DEFAULT_CSV_PATH = './kaggle.csv'
+DEFAULT_CSV_PATH = './submissions/kaggle.csv'
 
 def kaggle_data(mnist_data):
     """
