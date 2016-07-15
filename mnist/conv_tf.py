@@ -143,7 +143,7 @@ def build_computational_graph(input_dimensions=DEFAULT_INPUT_DIMENSIONS,
     y_conv, keep_prob = build_nn(x)
 
     # Objective function.
-    cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv), reduction_indices=[1]))
+    cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y_conv + 1e-10), reduction_indices=[1]))
     # Training step.
     train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 
