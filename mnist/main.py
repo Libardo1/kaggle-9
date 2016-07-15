@@ -16,5 +16,6 @@ def execute_analysis_conv():
 
     return kd
 
-kaggle_data = execute_analysis_conv()
-kaggle_data.to_csv(kaggle.DEFAULT_CSV_PATH, index=False, float_format='%.f')
+def main():
+    kaggle_data = execute_analysis_conv()
+    kaggle_data.to_csv(kaggle.DEFAULT_CSV_PATH, index=False, float_format='%.f')
