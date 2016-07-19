@@ -114,8 +114,10 @@ class UnlabeledMnistBatch():
 def batches(mnist_df, batch_size=1):
     return MnistBatch(mnist_df, batch_size)
 
+
 def unlabeled_batches(mnist_df, batch_size=1):
     return UnlabeledMnistBatch(mnist_df, batch_size)
+
 
 def from_data_frame(df, label_col='label'):
     try:
@@ -126,14 +128,17 @@ def from_data_frame(df, label_col='label'):
 
     return Mnist(images, labels)
 
+
 def from_unlabeled_data_frame(df):
     return Mnist(df, None)
+
 
 def decompress_mnist_data(path):
     """
     Uncompress a tarball file containing mnist data.
     """
     pass
+
 
 def fetch_data(handle):
     return pd.read_csv(handle)
